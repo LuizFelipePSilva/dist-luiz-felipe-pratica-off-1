@@ -58,7 +58,6 @@ public class MainCDN {
         t.start();
     }
 
-    // envia UPDATE direto a Origem
     static void update(String arquivo, String conteudo) {
         try (Socket s = new Socket("127.0.0.1", ORIGIN)) {
             s.setSoTimeout(3000);
@@ -73,7 +72,6 @@ public class MainCDN {
         }
     }
 
-    // apaga origin_files/ para voltar ao conteudo (v1)
     static void resetOrigem() throws IOException {
         Path dir = Paths.get("origin_files");
         if (!Files.exists(dir)) return;

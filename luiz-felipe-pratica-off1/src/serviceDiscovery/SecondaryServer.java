@@ -35,7 +35,7 @@ public class SecondaryServer {
                 double resultado = calcular(Double.parseDouble(parts[1]), Double.parseDouble(parts[2]), Operation.valueOf(parts[0].toUpperCase()));
                 res = "" + resultado;
             }
-            catch (Exception e) { res = "ERRO " + e.getMessage();}; // CORRIGIDO: espaço
+            catch (Exception e) { res = "ERRO " + e.getMessage();};
             System.out.println("[" + nome + "] " + req + " -> " + res);
             byte[] b = res.getBytes(StandardCharsets.UTF_8);
             DatagramPacket sendPacket = new DatagramPacket(b, b.length, packet.getAddress(), packet.getPort());
@@ -48,12 +48,12 @@ public class SecondaryServer {
                 InetAddress inet = InetAddress.getByName("127.0.0.1");
                 byte[] buffer = ("REGISTER " + nome + " " + ipSimulado + " " + porta + " SUM,SUB,DIVI,MULT").getBytes(StandardCharsets.UTF_8);
                 while(ativo) {
-                    s.send(new DatagramPacket(buffer, buffer.length, inet, portaDiretorio)); // CORRIGIDO: destino
+                    s.send(new DatagramPacket(buffer, buffer.length, inet, portaDiretorio));
                     Thread.sleep(2000);
                 }
             }catch (Exception ignored) {}
         });
-        t.setDaemon(true); // CORRIGIDO: iniciar a thread
+        t.setDaemon(true);
         t.start();
     }
     public void parar() {ativo = false; socket.close();}

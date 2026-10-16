@@ -15,7 +15,7 @@ public class MiniDNS {
         c1.enviar("QUERY servidor1");
         c2.enviar("QUERY servidor4");
         c3.enviar("QUERY servidor9");
-        Thread.sleep(500);
+        Thread.sleep(2500);
 
         Cliente reg = new Cliente("REG", 5050);
         reg.enviar("UPDATE servidor1 192.168.0.111");

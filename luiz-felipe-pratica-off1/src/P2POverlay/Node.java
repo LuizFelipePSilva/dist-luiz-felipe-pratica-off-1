@@ -33,7 +33,7 @@ public class Node implements Runnable {
         this.port = BASE + id;
         this.prevPort = BASE + (id + TOTAL - 1) % TOTAL;
         this.nextPort = BASE + (id + 1) % TOTAL;
-        for (int i = id * 10; i < id * 10 + 10; i++) files.add("arquivo" + i + ".ext");
+        for (int i = id * 10 + 1; i < id * 10 + 10; i++) files.add("arquivo" + i + ".ext");
         this.serverSocket = new ServerSocket(port);
     }
 
@@ -94,7 +94,7 @@ public class Node implements Runnable {
         }
         String arquivo = "arquivo" + n + ".ext";
         log("INICIOU busca de " + arquivo);
-        tratarBusca(id, entrada, "", 0);
+        tratarBusca(id, arquivo, "", 0);
     }
 
     private void tratarBusca(int origem, String arquivo, String caminho, int saltos) {
@@ -110,7 +110,7 @@ public class Node implements Runnable {
     }
 
     private void tratarAchou(int origem, String arquivo, String dono, String caminho) {
-    if(origem == id) resultado(arquivo, name, caminho);
+    if(origem == id) resultado(arquivo, dono, caminho);
     else enviar(prevPort, "ACHOU;" + origem + ";" + arquivo + ";" + dono + ";" + caminho);
     }
 
@@ -119,8 +119,8 @@ public class Node implements Runnable {
     }
     private void enviar(int destino, String entrada) {
         try(Socket a = new Socket("127.0.0.1", destino); PrintWriter out = new PrintWriter(a.getOutputStream(), true)) {
-            out.println(entrada);
             log("Enviando para porta " + destino + ": " + entrada);
+            out.println(entrada);
         } catch(IOException e) {
             log("ERRO ao enviar para porta " + destino + ": " + e.getMessage());
         }

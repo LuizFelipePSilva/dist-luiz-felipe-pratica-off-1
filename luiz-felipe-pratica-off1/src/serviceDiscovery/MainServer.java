@@ -9,30 +9,28 @@ import java.util.concurrent.ConcurrentHashMap;
 import java.util.concurrent.atomic.AtomicInteger;
 
 public class MainServer {
-    public static void main(String[] args) throws Exception{
+    public static void main(String[] args) throws Exception {
         daemon(() -> new Diretorio(6009).rodar());
-        SecondaryServer c1 = new SecondaryServer(7001, 6009, "calc1", "10.0.0.1");
-        SecondaryServer c2 = new SecondaryServer(7002, 6009, "calc2", "10.0.0.2");
-        SecondaryServer c3 = new SecondaryServer(7003, 6009, "calc3", "10.0.0.3");
-        daemon(c1::rodar); daemon(c2::rodar); daemon(c3::rodar);
+
+        SecondaryServer[] calc = new SecondaryServer[3];
+        for (int i = 0; i < 3; i++) {
+            calc[i] = new SecondaryServer(7001 + i, 6009, "calc" + (i + 1), "10.0.0." + (i + 1));
+            daemon(calc[i]::rodar);
+        }
         Thread.sleep(1000);
 
-        cliente("CLI1", "SUM", "SUM 1 2");
-        cliente("CLI2", "SUM", "SUM 3 4");
-        cliente("CLI3", "SUM", "SUM 5 6");
-        cliente("CLI1", "MULT", "MULT 2 3");
-        cliente("CLI2", "MULT", "MULT 4 5");
-        cliente("CLI3", "MULT", "MULT 6 7");
+        for (int i = 1; i <= 3; i++) {
+            cliente("CLI" + i, "SUM", "SUM " + i + " " + i);
+            cliente("CLI" + i, "MULT", "MULT " + i + " 2");
+        }
         cliente("CLI1", "DIVI", "DIVI 1 0");
 
         System.out.println("--- derrubando calc2 ---");
-        c2.parar();
+        calc[1].parar();
         Thread.sleep(7000);
         cliente("CLI1", "SUM", "SUM 1 1");
-        cliente("CLI2", "SUM", "SUM 2 2");
-        cliente("CLI3", "SUM", "SUM 3 3");
-
     }
+
     interface Tarefa {void run() throws Exception;}
 
     static void daemon(Tarefa t){
@@ -42,18 +40,18 @@ public class MainServer {
     }
 
     static String udp(int porta, String msg) throws Exception{
-        try (DatagramSocket socket = new DatagramSocket()) { // CORRIGIDO: sem porta
+        try (DatagramSocket socket = new DatagramSocket()) {
             socket.setSoTimeout(2000);
             byte[] buf = msg.getBytes(StandardCharsets.UTF_8);
             socket.send(new DatagramPacket(buf, buf.length, InetAddress.getByName("127.0.0.1"), porta));
-            DatagramPacket r = new DatagramPacket(new byte[1024], 1024); // CORRIGIDO: buffer próprio
+            DatagramPacket r = new DatagramPacket(new byte[1024], 1024);
             socket.receive(r);
             return new String(r.getData(),0, r.getLength(), StandardCharsets.UTF_8);
         }
     }
 
     static void cliente(String nome, String servico, String op) throws Exception{
-        String d = udp(6009, "DISCOVER " + servico); // CORRIGIDO: espaço
+        String d = udp(6009, "DISCOVER " + servico);
         System.out.println("[" + nome + "] DIRETORIO" + d + " -> " + op);
         if(d.startsWith("ERRO")) return;
         System.out.println("[" + nome + "] Resultado " + udp(Integer.parseInt(d.split(" ")[2]), op));
